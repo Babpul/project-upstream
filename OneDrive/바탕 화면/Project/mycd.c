@@ -16,22 +16,21 @@ void mycd (const char* path){
     {
         int i = 0;
         int first = 0;
-        char *tmp_ptr = strtok(path, "/");
-        if (first= 0)
-          {
-            while (tmp_ptr != NULL)
-            {
-            front_dir_list_ptr -> next_ptr -> name = tmp_ptr;
-            tmp_ptr = strtok(NULL, "/");
-            }
-            first++;
-          }
-        else
+        DIR_LIST *tmp_ptr;
+        char *nm_ptr = strtok(path, "/");
+        while (nm_ptr != NULL)
         {
-          while (tmp_ptr != NULL)
-            {
-            front_dir_list_ptr -> next_ptr -> name = tmp_ptr;
-            tmp_ptr = strtok(NULL, "/");
-            }
+         if (first == 0)
+         {
+          tmp_ptr = front_dir_list_ptr -> next_ptr;
+          front_dir_list_ptr -> next_ptr -> name = nm_ptr;
+          nm_ptr = strtok(NULL, "/");
+          first++;
+         }
+         else if (first != 0)
+         {
+          tmp_ptr -> next_ptr -> name = nm_ptr;
+          nm_ptr = strtok(NULL, "/");
+         }
         }
     }
