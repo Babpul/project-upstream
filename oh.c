@@ -1,5 +1,10 @@
 #include "user.h"
 #include <time.h>
+
+DIR_LIST* dirfound(char* fdir);
+const char* prtpwd();
+
+
 /*
 이름    : mycd 함수
 작성자  : 오규빈
@@ -7,7 +12,7 @@
 받는값  : 경로 문자열
 리턴값  : X
 */
-void mycd (const char* path){
+void mycd (char* path){
     if(path == NULL)
     {//path 인자가 없을시
         rear_dir_list_ptr == front_dir_list_ptr;//작업 디렉터리를 홈디렉터리로 설정
@@ -15,52 +20,43 @@ void mycd (const char* path){
 
     else if (path != NULL)
     {
-        int i = 0;
         int first = 0;
         DIR_LIST *tmp_ptr;
         char *nm_ptr = strtok(path, "/");
-        while (nm_ptr != NULL)
+        while (nm_ptr != NULL)//이름이 NULL값이 아니라면
         {
-         if (first == 0)
+         if (first == 0)//시작디렉토리가 . , .. , /셋 중 하나  . 와 ..에서 시작할때의 경우 판단
          {
-          if (nm_ptr == ".")
+          if (nm_ptr == ".") //.에서 시작
           {
-          tmp_ptr = rear_dir_list_ptr -> next_ptr;
-          tmp_ptr -> next_ptr -> name = nm_ptr;
+          tmp_ptr = rear_dir_list_ptr;
           nm_ptr = strtok(NULL, "/");
           first++;
           }
-          else if (nm_ptr == "..")
+          else if (nm_ptr == "..")//..에서 시작
           {
-           tmp_ptr = front_dir_list_ptr -> next_ptr;
-           front_dir_list_ptr -> next_ptr -> name = nm_ptr;
+           int i = 0;
+           tmp_ptr = front_dir_list_ptr;
+           while (i < cntfound()-1){
+               tmp_ptr = tmp_ptr -> next_ptr;
+           } // tmp_ptr이 현재 디렉터리 리스트에서 (마지막-1)번째 디렉토리를 가리키도록 함.
+           tmp_ptr = rear_dir_list_ptr;
            nm_ptr = strtok(NULL, "/");
            first++;
-          }
-          else if (nm_ptr == "/")
-          {
-           tmp_ptr = front_dir_list_ptr -> next_ptr;
-           front_dir_list_ptr -> next_ptr -> name = nm_ptr;
-           nm_ptr = strtok(NULL, "/");
-           first++;
-          }
-          else
-          {
-              printf("잘못된 입력 방식입니다.");
-              break;
           }
          }
          else if (first != 0)
          {
-          tmp_ptr -> next_ptr -> name = nm_ptr;
+          DIR_LIST* new_dir = malloc(sizeof(DIR_LIST)); 
+          new_dir-> name = nm_ptr;
+          const char* s = strcat("/",nm_ptr);//s = /'다음 디렉토리'
+          new_dir-> inode = path_to_inode(strcat(prtpwd(),s));
+          tmp_ptr -> next_ptr = new_dir;
           nm_ptr = strtok(NULL, "/");
          }
-         tmp_ptr->next_ptr == NULL;
-         rear_dir_list_ptr == tmp_ptr;
         }
     }
 }
-    //미안합니다
 
 /*
 이름    : mycpto 함수
@@ -203,7 +199,7 @@ void mycpfrom (const char* source_file, const char* dest_file  ){
     inode_data_ptr -> minute = TimeInfo ->tm_min;
     inode_data_ptr -> second = TimeInfo ->tm_sec;
     
-     fwrite(inode_data_ptr,sizeof(INODE),1,myfs);
+    fwrite(inode_data_ptr,sizeof(INODE),1,myfs);
 
     fseek(myfs, BOOT_BLOCK_SIZE+SUPER_BLOCK_SIZE+(sizeof(INODE)*128)+(DATA_BLOCK_SIZE*(t-1)),SEEK_SET);//새로운 파일에 복사
     while ((c = getc(ifp)) != EOF)
@@ -388,3 +384,54 @@ void myrm(const char* file){
         putchar(0);
         i++;
     }
+}
+
+/*
+이름    : cntfound 함수
+작성자  : 오규빈
+기능    : dir_list에서 현재 이어진 디렉토리 수 리턴
+받는값  : X
+리턴값  : count값
+*/
+
+int cntfound() {
+    int cnt = 0;
+    DIR_LIST* tmp_dir = front_dir_list_ptr;
+    while ((tmp_dir->next_ptr) != NULL){
+        {
+            cnt++;
+            tmp_dir = tmp_dir->next_ptr;
+        }
+    }
+    return cnt;//탐색 실패시
+
+}
+
+/*
+이름    : prtpwd 함수
+작성자  : 오규빈
+기능    : pwd를 문자열로 리턴
+받는값  : X
+리턴값  : pwd 문자열값
+*/
+const char* prtpwd(){
+    char* s,pwd;
+    DIR_LIST *tmp_ptr = front_dir_list_ptr;
+
+    while (1)
+    {
+        s = tmp_ptr->name;
+        pwd = strcat(pwd,s);
+        if (tmp_ptr->next_ptr == NULL)
+        {
+            break;
+        }
+        else
+        {
+            pwd = strcat(pwd,"/");
+            tmp_ptr = tmp_ptr->next_ptr;
+        }
+    }
+
+    return;
+}
