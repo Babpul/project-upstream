@@ -1,4 +1,5 @@
 #include "user.h"
+#include <time.h>
 /*
 이름    : mycd 함수
 작성자  : 오규빈
@@ -129,6 +130,11 @@ void mycpfrom (const char* source_file, const char* dest_file  ){
     FILE *ifp;
     FILE *myfs;
     int c;
+    time_t Time;
+    struct tm* TimeInfo;
+ 
+    Time = time(NULL);                // 현재 시간을 받음
+    TimeInfo = localtime(&Time); 
 
     myfs = fopen(myfs, "wb");
     char *tmp_dir_string_ptr = (char *)malloc(sizeof(char) * 8); //디렉토리의 datablock에서 추출한 디렉토리명을 가리킬 포인터
@@ -185,9 +191,19 @@ void mycpfrom (const char* source_file, const char* dest_file  ){
         t++;
     }
     }
-    
+
+    INODE *inode_data_ptr = (INODE *)malloc(sizeof(INODE));
     fseek(myfs, BOOT_BLOCK_SIZE + SUPER_BLOCK_SIZE + (sizeof(INODE) * (t - 1)),SEEK_SET);//INODELIST 채우기
-    /* 아직 구현 안함*/
+    inode_data_ptr -> type = 0;
+    inode_data_ptr -> year = TimeInfo ->tm_year+1900;
+    inode_data_ptr->size = 0;
+    inode_data_ptr -> month = TimeInfo ->tm_mon+1;
+    inode_data_ptr -> date = TimeInfo ->tm_mday;
+    inode_data_ptr -> hour = TimeInfo ->tm_hour;
+    inode_data_ptr -> minute = TimeInfo ->tm_min;
+    inode_data_ptr -> second = TimeInfo ->tm_sec;
+    
+     fwrite(inode_data_ptr,sizeof(INODE),1,myfs);
 
     fseek(myfs, BOOT_BLOCK_SIZE+SUPER_BLOCK_SIZE+(sizeof(INODE)*128)+(DATA_BLOCK_SIZE*(t-1)),SEEK_SET);//새로운 파일에 복사
     while ((c = getc(ifp)) != EOF)
@@ -213,6 +229,11 @@ void mycp(const char* source_file, const char* dest_file  ){
     FILE *myfs;
     int c,d;
     int i = 0;
+    time_t Time;
+    struct tm* TimeInfo;
+ 
+    Time = time(NULL);                // 현재 시간을 받음
+    TimeInfo = localtime(&Time); 
 
     char *tmp_dir_string_ptr = (char *)malloc(sizeof(char) * 8); //디렉토리의 datablock에서 추출한 디렉토리명을 가리킬 포인터
     int *tmp_inode_ptr = (int *)malloc(sizeof(int)); //디렉토리의 datablock에서 추출한 inode 번호를 가리킬 포인터
@@ -241,6 +262,7 @@ void mycp(const char* source_file, const char* dest_file  ){
     fclose(myfs);
 
     myfs = fopen(myfs, "wb");
+    rewind(myfs);
     char *tmp_dir_string_ptr = (char *)malloc(sizeof(char) * 8); //디렉토리의 datablock에서 추출한 디렉토리명을 가리킬 포인터
     int *tmp_inode_ptr = (int *)malloc(sizeof(int)); //디렉토리의 datablock에서 추출한 inode 번호를 가리킬 포인터
 
@@ -295,9 +317,18 @@ void mycp(const char* source_file, const char* dest_file  ){
         t++;
     }
     }
-    
+    INODE *inode_data_ptr = (INODE *)malloc(sizeof(INODE));
     fseek(myfs, BOOT_BLOCK_SIZE + SUPER_BLOCK_SIZE + (sizeof(INODE) * (t - 1)),SEEK_SET);//INODELIST 채우기
-    /* 아직 구현 안함*/
+    inode_data_ptr -> type = 0;
+    inode_data_ptr -> year = TimeInfo ->tm_year+1900;
+    inode_data_ptr->size = 0;
+    inode_data_ptr -> month = TimeInfo ->tm_mon+1;
+    inode_data_ptr -> date = TimeInfo ->tm_mday;
+    inode_data_ptr -> hour = TimeInfo ->tm_hour;
+    inode_data_ptr -> minute = TimeInfo ->tm_min;
+    inode_data_ptr -> second = TimeInfo ->tm_sec;
+
+    fwrite(inode_data_ptr,sizeof(INODE),1,myfs);
 
     fseek(myfs, BOOT_BLOCK_SIZE+SUPER_BLOCK_SIZE+(sizeof(INODE)*128)+(DATA_BLOCK_SIZE*(t-1)),SEEK_SET);//새로운 파일에 복사
     while(i != DATA_BLOCK_SIZE){
