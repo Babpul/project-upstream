@@ -247,11 +247,13 @@ void mycp(const char* source_file, const char* dest_file  ){
     myfs = fopen("myfs","wb");
     rewind(myfs);
     fseek(myfs, BOOT_BLOCK_SIZE+SUPER_BLOCK_SIZE+(sizeof(INODE)*128)+(DATA_BLOCK_SIZE*(new_data-1)),SEEK_SET);//새로운 파일에 복사
-    int j;
-    while (tmp_data_string) != EOF)
+    int k = 0;
+    int j = sizeof(tmp_data_string);
+    while (k < j);
     {
       size_F++;
       putchar(c);
+      k++;
     }
 
     fseek(myfs, BOOT_BLOCK_SIZE + SUPER_BLOCK_SIZE + (sizeof(INODE) * (new_inode - 1)),SEEK_SET);//INODELIST 채우기
